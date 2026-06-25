@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mes avis Google</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Instrument Sans', sans-serif;
+      background: #FEFAF4;
+      color: #2C1810;
+      min-height: 100vh;
+      padding: 24px 16px 48px;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    header {
+      text-align: center;
+      padding: 8px 0 8px;
+    }
+
+    header h1 {
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: #B89080;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .card {
+      background: #FFFDF9;
+      border: 1px solid #EBD5C2;
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .rating-card {
+      background: #FFF0E2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .rating-label {
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: #B89080;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .rating-value {
+      font-family: 'Fraunces', serif;
+      font-optical-sizing: auto;
+      font-size: 68px;
+      font-weight: 600;
+      color: #D4762A;
+      line-height: 1;
+    }
+
+    .rating-stars {
+      font-size: 22px;
+      color: #D4762A;
+      letter-spacing: 3px;
+      line-height: 1;
+    }
+
+    .rating-count {
+      font-family: 'DM Sans', sans-serif;
+      font-variant-numeric: tabular-nums;
+      font-size: 13px;
+      color: #B89080;
+      margin-top: 2px;
+    }
+
+    .chart-label {
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      color: #B89080;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 20px;
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Mes avis Google</h1>
+    </header>
+
+    <div class="card rating-card">
+      <span class="rating-label">Note moyenne</span>
+      <span class="rating-value" id="avg-rating">—</span>
+      <span class="rating-stars" id="stars"></span>
+      <span class="rating-count" id="review-count"></span>
+    </div>
+
+    <div class="card">
+      <div class="chart-label">Évolution mensuelle</div>
+      <div class="chart-wrapper">
+        <canvas id="chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const MOCK_REVIEWS = [
+      { rating: 4, date: '2025-07-03' },
+      { rating: 3, date: '2025-07-18' },
+      { rating: 4, date: '2025-08-05' },
+      { rating: 4, date: '2025-08-22' },
+      { rating: 5, date: '2025-09-09' },
+      { rating: 4, date: '2025-09-27' },
+      { rating: 5, date: '2025-10-11' },
+      { rating: 4, date: '2025-10-29' },
+      { rating: 5, date: '2025-11-08' },
+      { rating: 5, date: '2025-11-21' },
+      { rating: 4, date: '2025-12-05' },
+      { rating: 4, date: '2025-12-19' },
+      { rating: 3, date: '2026-01-10' },
+      { rating: 4, date: '2026-01-25' },
+      { rating: 4, date: '2026-02-07' },
+      { rating: 4, date: '2026-02-20' },
+      { rating: 5, date: '2026-03-12' },
+      { rating: 4, date: '2026-03-28' },
+      { rating: 5, date: '2026-04-09' },
+      { rating: 4, date: '2026-04-23' },
+      { rating: 4, date: '2026-05-14' },
+      { rating: 5, date: '2026-05-28' },
+      { rating: 4, date: '2026-06-10' },
+      { rating: 5, date: '2026-06-20' },
+    ];
+
+    let chart = null;
+
+    function renderDashboard(reviews) {
+      if (!reviews.length) return;
+
+      const avg = reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+      document.getElementById('avg-rating').textContent = avg.toFixed(1);
+
+      const rounded = Math.round(avg);
+      document.getElementById('stars').textContent =
+        '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+
+      document.getElementById('review-count').textContent =
+        `${reviews.length} avis`;
+
+      const byMonth = {};
+      for (const r of reviews) {
+        const key = r.date.slice(0, 7);
+        if (!byMonth[key]) byMonth[key] = [];
+        byMonth[key].push(r.rating);
+      }
+
+      const sortedKeys = Object.keys(byMonth).sort();
+      const labels = sortedKeys.map(k => {
+        const [year, month] = k.split('-');
+        return new Date(+year, +month - 1, 1).toLocaleDateString('fr-FR', {
+          month: 'short', year: '2-digit'
+        });
+      });
+      const data = sortedKeys.map(k => {
+        const arr = byMonth[k];
+        return +(arr.reduce((s, v) => s + v, 0) / arr.length).toFixed(2);
+      });
+
+      renderChart(labels, data);
+    }
+
+    function renderChart(labels, data) {
+      const ctx = document.getElementById('chart').getContext('2d');
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            borderColor: '#D4762A',
+            backgroundColor: 'rgba(212, 118, 42, 0.08)',
+            borderWidth: 2,
+            tension: 0.3,
+            fill: true,
+            pointBackgroundColor: '#D4762A',
+            pointBorderColor: '#D4762A',
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 600, easing: 'easeInOutQuart' },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#FFFDF9',
+              borderColor: '#EBD5C2',
+              borderWidth: 1,
+              titleColor: '#7A5C4E',
+              bodyColor: '#D4762A',
+              bodyFont: { family: 'DM Sans', size: 13, weight: '600' },
+              titleFont: { family: 'Instrument Sans', size: 11 },
+              callbacks: {
+                label: ctx => `${ctx.parsed.y.toFixed(1)} ★`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: '#EBD5C2', lineWidth: 0.5 },
+              border: { color: '#EBD5C2' },
+              ticks: {
+                font: { family: 'DM Sans', size: 11 },
+                color: '#B89080',
+                maxRotation: 45,
+              }
+            },
+            y: {
+              min: 1,
+              max: 5,
+              grid: { color: '#EBD5C2', lineWidth: 0.5 },
+              border: { color: '#EBD5C2' },
+              ticks: {
+                stepSize: 1,
+                font: { family: 'DM Sans', size: 11 },
+                color: '#B89080',
+                callback: v => `${v}★`
+              }
+            }
+          }
+        }
+      });
+    }
+
+    renderDashboard(MOCK_REVIEWS);
+  </script>
+</body>
+</html>

@@ -16,7 +16,7 @@ Décisions durables qui s'appliquent à toutes les phases :
 
 ---
 
-## Phase 1 : Squelette visuel avec données mockées
+## Phase 1 : Squelette visuel avec données mockées ✅
 
 **User stories** : US-2, US-3, US-4
 
@@ -26,15 +26,15 @@ Une page HTML responsive, ouvrable directement dans le navigateur sur mobile et 
 
 ### Critères d'acceptation
 
-- [ ] La page s'ouvre sans serveur (protocole `file://` ou serveur local)
-- [ ] Une note moyenne est visible avec indication visuelle claire (étoiles ou chiffre)
-- [ ] Un graphe mensuel affiche au moins 6 points de données fictifs
-- [ ] La mise en page est lisible sur un écran mobile (≥ 375 px) sans défilement horizontal
-- [ ] La mise en page est lisible sur desktop
+- [x] La page s'ouvre sans serveur (protocole `file://` ou serveur local)
+- [x] Une note moyenne est visible avec indication visuelle claire (étoiles ou chiffre)
+- [x] Un graphe mensuel affiche au moins 6 points de données fictifs
+- [x] La mise en page est lisible sur un écran mobile (≥ 375 px) sans défilement horizontal
+- [x] La mise en page est lisible sur desktop
 
-## Bloquée par
+## Complétée le
 
-Aucune — démarrable immédiatement.
+2026-06-25
 
 ---
 
